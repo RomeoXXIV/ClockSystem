@@ -1,1 +1,26 @@
+name: ActionLint
 
+on: [push, pull_request, workflow_dispatch]
+
+permissions:
+  contents: read
+  pull-requests: write
+
+jobs:
+  run-actionlint:
+    runs-on: ubuntu-latest
+    steps: 
+      # Checkout the source code to analyze
+      - uses: actions/checkout@v3
+
+      # Run ActionLint, will fail on errors
+      - uses: devops-actions/actionlint@c0ee017f8abef55d843a647cd737b87a1976eb69 # Using a specific commit SHA
+        continue-on-error: true
+        id: action-lint
+
+      # Upload ActionLint results as an artifact
+      - uses: actions/upload-artifact@v3
+        if: always() # Ensure this step runs even if the ActionLint step fails
+        with:
+          name: actionlint-results
+          path: ${{ steps.action-lint.outputs.results-file }}
